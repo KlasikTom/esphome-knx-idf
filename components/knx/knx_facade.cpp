@@ -87,11 +87,11 @@ IRAM_ATTR void buttonEvent()
 #elif defined(ARDUINO_ARCH_ESP32)
     // predefined global instance for TP or IP or TP/IP coupler
     #if MASK_VERSION == 0x07B0
-        KnxFacade<Esp32Platform, Bau07B0> knx(buttonEvent);
+        KnxFacade<KnxEsp32Platform, Bau07B0> knx(buttonEvent);
     #elif MASK_VERSION == 0x57B0
-        KnxFacade<Esp32Platform, Bau57B0> knx(buttonEvent);
+        KnxFacade<KnxEsp32Platform, Bau57B0> knx(buttonEvent);
     #elif MASK_VERSION == 0x091A
-        KnxFacade<Esp32Platform, Bau091A> knx(buttonEvent);
+        KnxFacade<KnxEsp32Platform, Bau091A> knx(buttonEvent);
     #else
         #error "Mask version not supported on ARDUINO_ARCH_ESP32"
     #endif

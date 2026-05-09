@@ -546,11 +546,11 @@ template <class P, class B> class KnxFacade : private SaveRestore
     #elif defined(ARDUINO_ARCH_ESP32)
         // predefined global instance for TP or IP or TP/IP coupler
         #if MASK_VERSION == 0x07B0
-            extern KnxFacade<Esp32Platform, Bau07B0> knx;
+            extern KnxFacade<KnxEsp32Platform, Bau07B0> knx;
         #elif MASK_VERSION == 0x57B0
-            extern KnxFacade<Esp32Platform, Bau57B0> knx;
+            extern KnxFacade<KnxEsp32Platform, Bau57B0> knx;
         #elif MASK_VERSION == 0x091A
-            extern KnxFacade<Esp32Platform, Bau091A> knx;
+            extern KnxFacade<KnxEsp32Platform, Bau091A> knx;
         #else
             #error "Mask version not supported on ARDUINO_ARCH_ESP32"
         #endif

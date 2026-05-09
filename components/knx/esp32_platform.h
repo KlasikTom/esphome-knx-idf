@@ -1,14 +1,20 @@
-#ifdef ARDUINO_ARCH_ESP8266
+#ifndef KNX_ESP32_PLATFORM_H
+#define KNX_ESP32_PLATFORM_H
+
+#ifdef ARDUINO_ARCH_ESP32
 #include "arduino_platform.h"
-#include <ESP8266WiFi.h>
+
 #include <WiFiUdp.h>
 
-
-class EspPlatform : public ArduinoPlatform
+class KnxEsp32Platform : public ArduinoPlatform
 {
     public:
-        EspPlatform();
-        EspPlatform(HardwareSerial* s);
+        KnxEsp32Platform();
+        KnxEsp32Platform(HardwareSerial* s);
+
+        // uart
+        void knxUartPins(int8_t rxPin, int8_t txPin);
+        void setupUart() override;
 
         // ip stuff
         uint32_t currentIpAddress() override;
@@ -26,7 +32,7 @@ class EspPlatform : public ArduinoPlatform
         void setupMultiCast(uint32_t addr, uint16_t port) override;
         void closeMultiCast() override;
         bool sendBytesMultiCast(uint8_t* buffer, uint16_t len) override;
-        int readBytesMultiCast(uint8_t* buffer, uint16_t maxLen) override;
+        int readBytesMultiCast(uint8_t* buffer, uint16_t maxLen, uint32_t& src_addr, uint16_t& src_port) override;
 
         //unicast
         bool sendBytesUniCast(uint32_t addr, uint16_t port, uint8_t* buffer, uint16_t len) override;
@@ -34,10 +40,18 @@ class EspPlatform : public ArduinoPlatform
         //memory
         uint8_t* getEepromBuffer(uint32_t size);
         void commitToEeprom();
+
+    protected:
+        IPAddress _remoteIP;
+    protected:
+        uint16_t _remotePort;
+
     private:
         WiFiUDP _udp;
-        uint32_t _multicastAddr;
-        uint16_t _multicastPort;
+        int8_t _rxPin = -1;
+        int8_t _txPin = -1;
 };
 
 #endif
+#endif
+

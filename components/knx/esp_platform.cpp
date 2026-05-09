@@ -11,49 +11,49 @@
     #define KNX_SERIAL Serial
 #endif
 
-EspPlatform::EspPlatform()
+KnxEspPlatform::KnxEspPlatform()
 #ifndef KNX_NO_DEFAULT_UART
     : ArduinoPlatform(&KNX_SERIAL)
 #endif
 {
 }
 
-EspPlatform::EspPlatform( HardwareSerial* s) : ArduinoPlatform(s)
+KnxEspPlatform::KnxEspPlatform( HardwareSerial* s) : ArduinoPlatform(s)
 {
 }
 
-uint32_t EspPlatform::currentIpAddress()
+uint32_t KnxEspPlatform::currentIpAddress()
 {
     return WiFi.localIP();
 }
 
-uint32_t EspPlatform::currentSubnetMask()
+uint32_t KnxEspPlatform::currentSubnetMask()
 {
     return WiFi.subnetMask();
 }
 
-uint32_t EspPlatform::currentDefaultGateway()
+uint32_t KnxEspPlatform::currentDefaultGateway()
 {
     return WiFi.gatewayIP();
 }
 
-void EspPlatform::macAddress(uint8_t* addr)
+void KnxEspPlatform::macAddress(uint8_t* addr)
 {
     wifi_get_macaddr(STATION_IF, addr);
 }
 
-uint32_t EspPlatform::uniqueSerialNumber()
+uint32_t KnxEspPlatform::uniqueSerialNumber()
 {
     return ESP.getChipId();
 }
 
-void EspPlatform::restart()
+void KnxEspPlatform::restart()
 {
     println("restart");
     ESP.reset();
 }
 
-void EspPlatform::setupMultiCast(uint32_t addr, uint16_t port)
+void KnxEspPlatform::setupMultiCast(uint32_t addr, uint16_t port)
 {
     _multicastAddr = htonl(addr);
     _multicastPort = port;
@@ -65,12 +65,12 @@ void EspPlatform::setupMultiCast(uint32_t addr, uint16_t port)
     KNX_DEBUG_SERIAL.printf("multicast setup result %d\n", result);
 }
 
-void EspPlatform::closeMultiCast()
+void KnxEspPlatform::closeMultiCast()
 {
     _udp.stop();
 }
 
-bool EspPlatform::sendBytesMultiCast(uint8_t* buffer, uint16_t len)
+bool KnxEspPlatform::sendBytesMultiCast(uint8_t* buffer, uint16_t len)
 {
     //printHex("<- ",buffer, len);
     _udp.beginPacketMulticast(_multicastAddr, _multicastPort, WiFi.localIP());
@@ -79,7 +79,7 @@ bool EspPlatform::sendBytesMultiCast(uint8_t* buffer, uint16_t len)
     return true;
 }
 
-int EspPlatform::readBytesMultiCast(uint8_t* buffer, uint16_t maxLen)
+int KnxEspPlatform::readBytesMultiCast(uint8_t* buffer, uint16_t maxLen)
 {
     int len = _udp.parsePacket();
 
@@ -97,7 +97,7 @@ int EspPlatform::readBytesMultiCast(uint8_t* buffer, uint16_t maxLen)
     return len;
 }
 
-bool EspPlatform::sendBytesUniCast(uint32_t addr, uint16_t port, uint8_t* buffer, uint16_t len)
+bool KnxEspPlatform::sendBytesUniCast(uint32_t addr, uint16_t port, uint8_t* buffer, uint16_t len)
 {
     IPAddress ucastaddr(htonl(addr));
     println("sendBytesUniCast endPacket fail");
@@ -115,7 +115,7 @@ bool EspPlatform::sendBytesUniCast(uint32_t addr, uint16_t port, uint8_t* buffer
     return true;
 }
 
-uint8_t* EspPlatform::getEepromBuffer(uint32_t size)
+uint8_t* KnxEspPlatform::getEepromBuffer(uint32_t size)
 {
     uint8_t* eepromptr = EEPROM.getDataPtr();
 
@@ -128,7 +128,7 @@ uint8_t* EspPlatform::getEepromBuffer(uint32_t size)
     return eepromptr;
 }
 
-void EspPlatform::commitToEeprom()
+void KnxEspPlatform::commitToEeprom()
 {
     EEPROM.commit();
 }
