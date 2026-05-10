@@ -1,7 +1,7 @@
 #ifdef ARDUINO
 
 #include "arduino_platform.h"
-#include "knx/bits.h"
+#include "bits.h"
 
 #include <Arduino.h>
 #ifndef KNX_NO_SPI

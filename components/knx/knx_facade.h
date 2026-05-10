@@ -1,12 +1,12 @@
 #pragma once
 
-#include "knx/bits.h"
-#include "knx/config.h"
-#include "knx/bau07B0.h"
-#include "knx/bau091A.h"
-#include "knx/bau27B0.h"
-#include "knx/bau2920.h"
-#include "knx/bau57B0.h"
+#include "bits.h"
+#include "config.h"
+#include "bau07B0.h"
+#include "bau091A.h"
+#include "bau27B0.h"
+#include "bau2920.h"
+#include "bau57B0.h"
 
 #ifndef USERDATA_SAVE_SIZE
     #define USERDATA_SAVE_SIZE 0

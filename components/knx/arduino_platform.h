@@ -2,7 +2,7 @@
 
 #ifdef ARDUINO
 
-#include "knx/platform.h"
+#include "platform.h"
 
 #include "Arduino.h"
 

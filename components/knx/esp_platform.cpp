@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
-#include "knx/bits.h"
+#include "bits.h"
 
 #ifndef KNX_SERIAL
     #define KNX_SERIAL Serial

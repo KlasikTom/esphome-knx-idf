@@ -8,7 +8,7 @@ knx_ns = cg.esphome_ns.namespace('knx_custom')
 KNXComponent = knx_ns.class_('KNXComponent', cg.Component)
 
 CONF_INDIVIDUAL_ADDRESS = "individual_address"
-MULTI_CONF = True  # Allows only one instance
+MULTI_CONF = False
 
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(KNXComponent),
@@ -23,29 +23,17 @@ async def to_code(config):
     cg.add(var.set_individual_address(config[CONF_INDIVIDUAL_ADDRESS]))
 
     curr_dir = os.path.dirname(os.path.abspath(__file__))
-    knx_lib_dir = os.path.join(curr_dir, "knx")
-
-    # Include paths
     cg.add_build_flag(f"-I{curr_dir}")
-    cg.add_build_flag(f"-I{knx_lib_dir}")
 
     # KNX stack defines
-    cg.add_build_flag("-DMASK_VERSION=0x07B0")
+    cg.add_build_flag("-DMASK_VERSION=0x57B0")
     cg.add_build_flag("-DKNX_NO_AUTOMATION")
+    cg.add_build_flag("-DKNX_NO_SPI")
     cg.add_build_flag("-DKNX_NO_AUTOMATIC_GLOBAL_INSTANCE")
 
     if CORE.is_esp32:
         cg.add_build_flag("-DARDUINO_ARCH_ESP32")
 
-    # KLÍČOVÉ: přidat všechny .cpp soubory z podadresáře knx/
-    # ESPHome build systém nekompiluje podadresáře automaticky.
-    # Přidáme je explicitně přes build_src_filter.
-    cg.add_platformio_option(
-        "build_src_filter",
-        ["+<**/*.cpp>", "+<**/*.c>"]
-    )
-
-    # Potřebné Arduino knihovny
     cg.add_library("EEPROM", None)
     cg.add_library("WiFi", None)
 
