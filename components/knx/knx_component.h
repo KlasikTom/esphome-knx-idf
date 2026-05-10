@@ -1,7 +1,10 @@
 #pragma once
 #include "esphome/core/component.h"
+#include "esphome/core/log.h"
 #include "knx_facade.h"
-#include "esp_platform.h"
+#include "esp32_platform.h"
+
+static const char* const TAG_KNX = "knx";
 
 namespace esphome {
 namespace knx_custom {
@@ -11,18 +14,21 @@ class KNXComponent : public Component {
   void set_individual_address(const std::string &address) { address_str_ = address; }
 
   void setup() override {
-    ESP_LOGI("knx", "Inicializace KNX...");
-    
-    static KnxEsp32Platform platform_inst;
-    // Oprava: platform() vrací referenci, do které se přiřazuje
-    knx.platform() = platform_inst; 
+    ESP_LOGI(TAG_KNX, "Inicializace KNX stacku...");
 
     uint16_t addr = stringToAddress(address_str_.c_str());
+    if (addr == 0) {
+      ESP_LOGE(TAG_KNX, "Neplatna individualni adresa: %s", address_str_.c_str());
+      this->mark_failed();
+      return;
+    }
 
-    knx.bau().deviceObject().individualAddress(addr);    
-
+    // KNX stack se inicializuje přes globální instanci 'knx' (definovánu v knx_facade.cpp)
+    // ARDUINO_ARCH_ESP32 + MASK_VERSION=0x07B0 → KnxFacade<KnxEsp32Platform, Bau07B0>
+    knx.bau().deviceObject().individualAddress(addr);
     knx.start();
-    ESP_LOGI("knx", "KNX Stack spuštěn s adresou %s", address_str_.c_str());
+
+    ESP_LOGI(TAG_KNX, "KNX stack spusten, adresa: %s (0x%04X)", address_str_.c_str(), addr);
   }
 
   void loop() override {
@@ -34,10 +40,12 @@ class KNXComponent : public Component {
  protected:
   std::string address_str_;
 
-  uint16_t stringToAddress(const char* areaLineMember) {
-    uint16_t area, line, member;
-    if (sscanf(areaLineMember, "%hu.%hu.%hu", &area, &line, &member) == 3)
-        return (area << 12) | (line << 8) | member;
+  static uint16_t stringToAddress(const char* s) {
+    unsigned int area, line, member;
+    if (sscanf(s, "%u.%u.%u", &area, &line, &member) == 3) {
+      if (area <= 15 && line <= 15 && member <= 255)
+        return (uint16_t)((area << 12) | (line << 8) | member);
+    }
     return 0;
   }
 };

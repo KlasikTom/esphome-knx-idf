@@ -1,54 +1,53 @@
 #pragma once
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/core/component.h"
+#include "esphome/core/log.h"
 #include "knx_facade.h"
+
+static const char* const TAG_KNX_SENSOR = "knx.sensor";
 
 namespace esphome {
 namespace knx_custom {
 
+class KNXComponent;  // forward declaration
+
 class KNXSensor : public sensor::Sensor, public Component {
  public:
   void set_group_address(const std::string &ga) { ga_str_ = ga; }
+  void set_knx_component(KNXComponent* /*knx_comp*/) { /* referenci nepotřebujeme, knx je globální */ }
 
   void setup() override {
-    uint16_t addr = stringToGroupAddress(ga_str_.c_str());
+    // KNX GroupObject index: každý sensor dostane unikátní slot
+    // V produkci se mapuje přes ETS AssociationTable.
+    // Zde pro jednoduché projekty přidělujeme staticky.
+    go_index_ = next_go_index_++;
 
-    // 1. Získáme existující GroupObject z tabulky.
-    // Knihovna ho identifikuje pomocí ASAP (Application Layer Service Access Point).
-    // Použijeme index 0, což je v malých projektech bez ETS obvykle první volný slot.
-    go_ = &knx.getGroupObject(0); 
-    
-    // 2. Nastavení typu databodu (DPT 9.001 pro teplotu)
-    // V group_object.h vidíme metodu dataPointType(Dpt value)
-    go_->dataPointType(DPT_Value_Temp);
+    GroupObject& go = knx.getGroupObject(go_index_);
 
-    // Poznámka k adrese: V této verzi knihovny se skupinová adresa 
-    // mapuje v AssociationTable. Pokud ji chceš vnutit natvrdo:
-    // Tato verze nemá go->groupAddress(), adresa se řeší v knx.loop() 
-    // skrze porovnávání v tabulce. Pro testování v ESPHome budeme 
-    // předpokládat, že stack je správně inicializován.
+    // DPT 9.001 = teplota v °C (2-byte float)
+    go.dataPointType(Dpt(9, 1));
 
-    go_->callback([this](GroupObject& go) {
-      // 3. Oprava získání hodnoty:
-      // go.value() vrací objekt KNXValue.
-      // KNXValue má definovaný 'operator float()', takže ho musíme explicitně přetypovat.
-      KNXValue knx_val = go.value();
-      float val = (float)knx_val; 
-      this->publish_state(val);
+    go.callback([this](GroupObject& go) {
+      KNXValue val = go.value();
+      float f = (float)val;
+      ESP_LOGD(TAG_KNX_SENSOR, "KNX callback GA index %d: %.2f", go_index_, f);
+      this->publish_state(f);
     });
+
+    ESP_LOGI(TAG_KNX_SENSOR, "KNXSensor setup: GA='%s', GO index=%d", ga_str_.c_str(), go_index_);
   }
+
+  float get_setup_priority() const override { return setup_priority::AFTER_WIFI - 1.0f; }
 
  protected:
   std::string ga_str_;
-  GroupObject* go_{nullptr};
+  uint16_t go_index_{0};
 
-  uint16_t stringToGroupAddress(const char* ga) {
-    uint16_t a, b, c;
-    if (sscanf(ga, "%hu/%hu/%hu", &a, &b, &c) == 3)
-        return (a << 11) | (b << 8) | c;
-    return 0;
-  }
+  // Statický čítač pro přidělování GO indexů
+  static uint16_t next_go_index_;
 };
+
+uint16_t KNXSensor::next_go_index_ = 0;
 
 }  // namespace knx_custom
 }  // namespace esphome
