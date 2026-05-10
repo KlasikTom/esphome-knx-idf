@@ -120,8 +120,8 @@ class BauSystemB : protected BusAccessUnit
             Restarted
         };
 
+        DeviceObject _deviceObj;   // MUST be before _memory (initialized first)
         Memory _memory;
-        DeviceObject _deviceObj;
         ApplicationProgramObject _appProgram;
         Platform& _platform;
         RestartState _restartState = Idle;

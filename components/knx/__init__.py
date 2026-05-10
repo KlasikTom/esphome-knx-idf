@@ -19,17 +19,14 @@ CONFIG_SCHEMA = cv.Schema({
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
-
     cg.add(var.set_individual_address(config[CONF_INDIVIDUAL_ADDRESS]))
 
     curr_dir = os.path.dirname(os.path.abspath(__file__))
     cg.add_build_flag(f"-I{curr_dir}")
-
-    # KNX stack defines
-    cg.add_build_flag("-DMASK_VERSION=0x57B0")
+    cg.add_build_flag("-DMASK_VERSION=0x57B0")   # KNX IP
     cg.add_build_flag("-DKNX_NO_AUTOMATION")
     cg.add_build_flag("-DKNX_NO_SPI")
-    cg.add_build_flag("-DKNX_NO_AUTOMATIC_GLOBAL_INSTANCE")
+    cg.add_build_flag("-Wno-unknown-pragmas")     # potlačí warningy z knx knihovny
 
     if CORE.is_esp32:
         cg.add_build_flag("-DARDUINO_ARCH_ESP32")
